@@ -65,9 +65,11 @@ function readConfigFromForm() {
     mul: { on: $("op-mul").checked, aMin: num("mul-a-min",2), aMax: num("mul-a-max",12), bMin: num("mul-b-min",2), bMax: num("mul-b-max",100) },
     div: { on: $("op-div").checked },
     duration: num("duration", 120),
-    suddenDeath: $("sudden-death").checked,
+    // one switch, two modes: auto-submit (Zetamac style, timer ends the run)
+    // vs Enter-to-submit sudden death (first wrong answer ends the run)
+    autoSubmit: $("mode-toggle").checked,
+    suddenDeath: !$("mode-toggle").checked,
     audioMode: $("audio-mode").checked,
-    autoSubmit: $("autosubmit").checked,
     keypad: $("keypad-toggle").checked,
   };
 }
@@ -82,10 +84,16 @@ function applyConfigToForm(c) {
   $("mul-b-min").value = c.mul.bMin; $("mul-b-max").value = c.mul.bMax;
   $("op-div").checked = c.div.on;
   $("duration").value = c.duration;
-  $("sudden-death").checked = c.suddenDeath;
+  $("mode-toggle").checked = c.autoSubmit === undefined ? true : !!c.autoSubmit;
   $("audio-mode").checked = !!c.audioMode;
-  $("autosubmit").checked = !!c.autoSubmit;
   $("keypad-toggle").checked = c.keypad === undefined ? isTouchDevice() : !!c.keypad;
+}
+
+/* the hint under Start explains whichever mode the switch selects */
+function updateModeHint() {
+  $("mode-hint").innerHTML = $("mode-toggle").checked
+    ? "Answers are accepted the instant they're correct — the run ends when time is up."
+    : "Type your answer and press <kbd>Enter</kbd> to submit — your first wrong answer ends the run.";
 }
 
 function isTouchDevice() {
@@ -176,6 +184,7 @@ function startGame() {
     cfg.audioMode = false;
     $("audio-mode").checked = false;
   }
+  if (cfg.audioMode) warmUpTTS();   // inside the Start tap = iOS audio unlock
   saveConfig(cfg);
 
   game.cfg = cfg;
@@ -343,10 +352,28 @@ function speechSupported() {
   return "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
 }
 
+/* The first spoken word tends to get clipped in two ways:
+   1. iOS clips the start of the very first utterance while the audio
+      session spins up — so we "warm up" with a silent utterance inside the
+      Start tap (a user gesture, which is also what unlocks audio on iOS).
+   2. cancel() followed by speak() in the same tick cuts the first word —
+      so when something is already speaking we cancel, wait a beat, then
+      speak. A leading comma adds one more safety beat of silence. */
+let ttsWarm = false;
+let speakTimer = null;
+
+function warmUpTTS() {
+  if (ttsWarm || !speechSupported()) return;
+  ttsWarm = true;
+  const u = new SpeechSynthesisUtterance("a");
+  u.volume = 0;
+  window.speechSynthesis.speak(u);
+}
+
 function speakProblem(text) {
   if (!("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel();
-  const spoken = text
+  clearTimeout(speakTimer);
+  const spoken = ", " + text
     .replace("+", " plus ")
     .replace("−", " minus ").replace("-", " minus ")
     .replace("×", " times ")
@@ -359,7 +386,14 @@ function speakProblem(text) {
   const done = () => { if (speaker) speaker.classList.remove("speaking"); };
   u.onend = done;
   u.onerror = done;
-  window.speechSynthesis.speak(u);
+
+  const synth = window.speechSynthesis;
+  if (synth.speaking || synth.pending) {
+    synth.cancel();
+    speakTimer = setTimeout(() => synth.speak(u), 180);
+  } else {
+    synth.speak(u);
+  }
 }
 
 function repeatProblem() {
@@ -369,6 +403,7 @@ function repeatProblem() {
 function setAudioStatus(t) { const e = $("audio-status"); if (e) e.textContent = t; }
 
 function stopAudio() {
+  clearTimeout(speakTimer);
   if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   const speaker = $("speaker-indicator");
   if (speaker) speaker.classList.remove("speaking");
@@ -640,6 +675,8 @@ function init() {
   applyConfigToForm(saved);
   // fresh install: default the keypad on for touch devices (phones/tablets)
   if (!saved) $("keypad-toggle").checked = isTouchDevice();
+  updateModeHint();
+  $("mode-toggle").addEventListener("change", updateModeHint);
 
   $("start-btn").addEventListener("click", startGame);
   $("quit-btn").addEventListener("click", () => { quitGame(); });

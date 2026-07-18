@@ -1,10 +1,12 @@
 # Zetamac++
 
-A local mental-math trainer for quant interview prep, in the spirit of [zetamac.com](https://arithmetic.zetamac.com/) — with two twists you asked for:
+A local mental-math trainer for quant interview prep, in the spirit of [zetamac.com](https://arithmetic.zetamac.com/):
 
-- **You press `Enter` to submit.** A correct answer is *not* auto-accepted; nothing advances until you hit Enter.
-- **One wrong answer ends the run** (sudden-death). Toggleable in settings if you'd rather just practice.
-- **Listen mode (optional).** The problem is *spoken aloud and never shown on screen* — you still type the answer and press Enter. Good practice for verbal phone screens where you have to hold the problem in your head.
+- **Two ways to play, one switch.** *Auto-submit* (the default) accepts an answer
+  the instant it's correct, like classic Zetamac — the run ends when time runs
+  out. Flip the switch off for *sudden death*: you press `Enter` to submit, and
+  your first wrong answer ends the run.
+- **Listen mode (optional).** The problem is *spoken aloud and never shown on screen* — you still type the answer. Good practice for verbal phone screens where you have to hold the problem in your head.
 
 It also tracks every run locally and shows your **daily high score** and **trends** over time.
 
@@ -38,17 +40,13 @@ Both work for every feature. The only difference is where your stats are stored
   classic setup: +/− over 2–100, ×/÷ with 2–12 × 2–100), set the duration
   (default 120s), then **Start**. Subtraction and division are generated as the
   inverses of addition and multiplication, so every answer is a clean integer.
-- **Sudden death** — on by default. Miss once and the run ends. Turn it off to
-  flash-and-retry instead.
-- **Listen mode** — check *"Listen mode (problem read aloud, not shown)"*. Each
-  problem is spoken instead of displayed; you type the answer and press `Enter`
-  exactly as in normal play. Press `R` (or the **Repeat** button) to hear it
-  again. Uses your browser's built-in text-to-speech — no microphone involved,
+- **Auto-submit switch** — on (default): answers are accepted the moment they're
+  correct, no Enter needed, and the run lasts until the timer ends. Off: press
+  `Enter` to submit, and your first wrong answer ends the run (sudden death).
+- **Listen mode** — each problem is spoken instead of displayed; you type the
+  answer exactly as in normal play. Press `R` (or the **Repeat** button) to hear
+  it again. Uses your browser's built-in text-to-speech — no microphone involved,
   and it works over `file://` too.
-- **Auto-submit** — check *"Auto-submit correct answers"* for classic Zetamac
-  behavior: the moment the field equals the right answer it's accepted, no Enter
-  needed. With it on, sudden death only triggers if you explicitly press Enter
-  on a wrong value — mistyping and fixing it costs you time, not the run.
 - **Big-button keypad** — an on-screen 0–9 pad with big tap targets, on by
   default on phones/tablets and off on desktop. On phones it sits flush with the
   bottom of the screen, like a real keyboard. With auto-submit the bottom-right
@@ -70,8 +68,8 @@ Both work for every feature. The only difference is where your stats are stored
    `http://192.168.1.23:8765`.
 5. Optional: tap **Share → Add to Home Screen** to get a full-screen app icon.
 
-On a phone the big-button keypad turns on automatically, and you'll probably
-want to enable **Auto-submit** in settings — both stick once set. Note that
+On a phone the big-button keypad turns on automatically, and auto-submit is
+already the default — settings stick once set. Note that
 stats are stored **per device**, so your iPhone history and your Mac history
 are separate records (macOS may also ask once to allow Python to accept
 incoming network connections — say yes).

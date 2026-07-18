@@ -88,25 +88,21 @@
           <input type="number" id="duration" value="120" min="5" />
         </label>
         <label class="checkbox-inline">
-          <input type="checkbox" id="sudden-death" checked />
-          End run on first wrong answer
+          <input type="checkbox" id="mode-toggle" class="switch" checked />
+          Auto-submit
         </label>
         <label class="checkbox-inline">
           <input type="checkbox" id="audio-mode" />
-          Listen mode (problem read aloud, not shown)
-        </label>
-        <label class="checkbox-inline">
-          <input type="checkbox" id="autosubmit" />
-          Auto-submit correct answers (no Enter, like Zetamac)
+          Listen mode
         </label>
         <label class="checkbox-inline">
           <input type="checkbox" id="keypad-toggle" />
-          Big-button keypad
+          Big-button keypad (for mobile)
         </label>
       </div>
 
       <button id="start-btn" class="primary big">Start</button>
-      <p class="hint">Type your answer and press <kbd>Enter</kbd> to submit.</p>
+      <p class="hint" id="mode-hint"></p>
     </div>
   </section>
 
