@@ -89,7 +89,7 @@
         </label>
         <label class="checkbox-inline">
           <input type="checkbox" id="mode-toggle" class="switch" checked />
-          Auto-submit
+          <span id="mode-label">Auto-submit</span>
         </label>
         <label class="checkbox-inline">
           <input type="checkbox" id="audio-mode" />
@@ -99,6 +99,16 @@
           <input type="checkbox" id="keypad-toggle" />
           Big-button keypad (for mobile)
         </label>
+      </div>
+
+      <div class="theme-row">
+        <span class="theme-label">Theme</span>
+        <div class="theme-chips">
+          <button class="theme-chip" data-theme="" style="--chip-accent:#4fd1c5">Ocean</button>
+          <button class="theme-chip" data-theme="serika" style="--chip-accent:#e2b714">Serika</button>
+          <button class="theme-chip" data-theme="matrix" style="--chip-accent:#15ff00">Matrix</button>
+          <button class="theme-chip" data-theme="8008" style="--chip-accent:#f44c7f">8008</button>
+        </div>
       </div>
 
       <button id="start-btn" class="primary big">Start</button>

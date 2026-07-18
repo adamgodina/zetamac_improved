@@ -5,6 +5,7 @@
 
 const STORE_KEY = "zetamacpp.runs.v1";
 const CFG_KEY   = "zetamacpp.config.v1";
+const THEME_KEY = "zetamacpp.theme";
 
 /* ---------- tiny DOM helpers ---------- */
 const $  = (id) => document.getElementById(id);
@@ -89,15 +90,40 @@ function applyConfigToForm(c) {
   $("keypad-toggle").checked = c.keypad === undefined ? isTouchDevice() : !!c.keypad;
 }
 
-/* the hint under Start explains whichever mode the switch selects */
+/* the switch label and the hint under Start both track the selected mode */
 function updateModeHint() {
-  $("mode-hint").innerHTML = $("mode-toggle").checked
+  const auto = $("mode-toggle").checked;
+  $("mode-label").textContent = auto ? "Auto-submit" : "Sudden death";
+  $("mode-hint").innerHTML = auto
     ? "Answers are accepted the instant they're correct — the run ends when time is up."
     : "Type your answer and press <kbd>Enter</kbd> to submit — your first wrong answer ends the run.";
 }
 
 function isTouchDevice() {
   return window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+}
+
+/* ============================================================
+   THEMES  —  palettes defined in style.css via [data-theme]
+   ============================================================ */
+function applyTheme(name) {
+  if (name) document.documentElement.dataset.theme = name;
+  else delete document.documentElement.dataset.theme;
+  localStorage.setItem(THEME_KEY, name || "");
+
+  // keep the browser / iOS status-bar color in sync with the palette
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) {
+    const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+    if (bg) meta.content = bg;
+  }
+
+  document.querySelectorAll(".theme-chip").forEach((c) =>
+    c.classList.toggle("active", (c.dataset.theme || "") === (name || ""))
+  );
+
+  // the stats chart bakes colors into its SVG — redraw if it's on screen
+  if ($("view-stats").classList.contains("active")) renderStats();
 }
 
 /* ============================================================
@@ -516,6 +542,15 @@ function renderDailyChart(runs) {
   const vals = days.map(d => byDay[d] || 0);
   const maxV = Math.max(...vals, 1);
 
+  // colors come from the active theme's CSS variables
+  const cssVars = getComputedStyle(document.documentElement);
+  const C = {
+    accent:    cssVars.getPropertyValue("--accent").trim()     || "#4fd1c5",
+    accentDim: cssVars.getPropertyValue("--accent-dim").trim() || "#2c8a82",
+    border:    cssVars.getPropertyValue("--border").trim()     || "#2c3744",
+    muted:     cssVars.getPropertyValue("--muted").trim()      || "#8b97a6",
+  };
+
   const W = 700, H = 240, padL = 36, padB = 28, padT = 14, padR = 14;
   const plotW = W - padL - padR, plotH = H - padT - padB;
   const n = days.length;
@@ -528,8 +563,8 @@ function renderDailyChart(runs) {
   for (let t = 0; t <= ticks; t++) {
     const v = Math.round((maxV / ticks) * t);
     const yy = y(v);
-    grid += `<line x1="${padL}" y1="${yy}" x2="${W - padR}" y2="${yy}" stroke="#2c3744" stroke-width="1"/>`;
-    grid += `<text x="${padL - 6}" y="${yy + 4}" fill="#8b97a6" font-size="11" text-anchor="end">${v}</text>`;
+    grid += `<line x1="${padL}" y1="${yy}" x2="${W - padR}" y2="${yy}" stroke="${C.border}" stroke-width="1"/>`;
+    grid += `<text x="${padL - 6}" y="${yy + 4}" fill="${C.muted}" font-size="11" text-anchor="end">${v}</text>`;
   }
 
   // bars
@@ -540,7 +575,7 @@ function renderDailyChart(runs) {
     if (v <= 0) return;
     const bx = x(i) - bw / 2;
     const by = y(v);
-    bars += `<rect x="${bx}" y="${by}" width="${bw}" height="${padT + plotH - by}" rx="3" fill="#2c8a82"/>`;
+    bars += `<rect x="${bx}" y="${by}" width="${bw}" height="${padT + plotH - by}" rx="3" fill="${C.accentDim}"/>`;
   });
 
   // line + points over the bars
@@ -548,7 +583,7 @@ function renderDailyChart(runs) {
   let dots = "";
   days.forEach((d, i) => {
     if (vals[i] <= 0) return;
-    dots += `<circle cx="${x(i)}" cy="${y(vals[i])}" r="3.5" fill="#4fd1c5"/>`;
+    dots += `<circle cx="${x(i)}" cy="${y(vals[i])}" r="3.5" fill="${C.accent}"/>`;
   });
 
   // x labels (show every other day to avoid clutter)
@@ -556,14 +591,14 @@ function renderDailyChart(runs) {
   days.forEach((d, i) => {
     if (i % 2 !== 0 && i !== n - 1) return;
     const label = d.slice(5); // MM-DD
-    xlabels += `<text x="${x(i)}" y="${H - 8}" fill="#8b97a6" font-size="10" text-anchor="middle">${label}</text>`;
+    xlabels += `<text x="${x(i)}" y="${H - 8}" fill="${C.muted}" font-size="10" text-anchor="middle">${label}</text>`;
   });
 
   host.innerHTML = `
     <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Daily high score chart">
       ${grid}
       ${bars}
-      <polyline points="${pts}" fill="none" stroke="#4fd1c5" stroke-width="2"/>
+      <polyline points="${pts}" fill="none" stroke="${C.accent}" stroke-width="2"/>
       ${dots}
       ${xlabels}
     </svg>`;
@@ -677,6 +712,12 @@ function init() {
   if (!saved) $("keypad-toggle").checked = isTouchDevice();
   updateModeHint();
   $("mode-toggle").addEventListener("change", updateModeHint);
+
+  // themes
+  applyTheme(localStorage.getItem(THEME_KEY) || "");
+  document.querySelectorAll(".theme-chip").forEach((chip) =>
+    chip.addEventListener("click", () => applyTheme(chip.dataset.theme || ""))
+  );
 
   $("start-btn").addEventListener("click", startGame);
   $("quit-btn").addEventListener("click", () => { quitGame(); });

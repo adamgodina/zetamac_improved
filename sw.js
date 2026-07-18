@@ -2,7 +2,7 @@
    once installed. Serves from cache instantly, refreshes the cache in the
    background so edits show up on the next launch. */
 
-const CACHE = "zetamacpp-v3";
+const CACHE = "zetamacpp-v4";
 const ASSETS = [
   "./",
   "./index.html",
