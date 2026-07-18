@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1419" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Zetamac++" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon.png" />
+<title>Zetamac++ — Mental Math Trainer</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ HEADER ============ -->
+  <header class="topbar">
+    <h1 class="logo">zetamac<span>++</span></h1>
+    <nav class="tabs">
+      <button class="tab active" data-view="play">Play</button>
+      <button class="tab" data-view="stats">Stats</button>
+    </nav>
+  </header>
+
+  <!-- ============ PLAY: SETUP ============ -->
+  <section id="view-setup" class="view active">
+    <div class="card">
+      <h2>Game settings</h2>
+
+      <div class="op-grid">
+        <!-- Addition -->
+        <div class="op-block">
+          <label class="op-toggle">
+            <input type="checkbox" id="op-add" checked />
+            <span>Addition</span>
+          </label>
+          <div class="range-row">
+            <input type="number" id="add-a-min" value="2" />
+            <span>to</span>
+            <input type="number" id="add-a-max" value="100" />
+            <span class="plus">+</span>
+            <input type="number" id="add-b-min" value="2" />
+            <span>to</span>
+            <input type="number" id="add-b-max" value="100" />
+          </div>
+        </div>
+
+        <!-- Subtraction -->
+        <div class="op-block">
+          <label class="op-toggle">
+            <input type="checkbox" id="op-sub" checked />
+            <span>Subtraction</span>
+          </label>
+          <div class="note">Inverse of the addition problems above.</div>
+        </div>
+
+        <!-- Multiplication -->
+        <div class="op-block">
+          <label class="op-toggle">
+            <input type="checkbox" id="op-mul" checked />
+            <span>Multiplication</span>
+          </label>
+          <div class="range-row">
+            <input type="number" id="mul-a-min" value="2" />
+            <span>to</span>
+            <input type="number" id="mul-a-max" value="12" />
+            <span class="plus">×</span>
+            <input type="number" id="mul-b-min" value="2" />
+            <span>to</span>
+            <input type="number" id="mul-b-max" value="100" />
+          </div>
+        </div>
+
+        <!-- Division -->
+        <div class="op-block">
+          <label class="op-toggle">
+            <input type="checkbox" id="op-div" checked />
+            <span>Division</span>
+          </label>
+          <div class="note">Inverse of the multiplication problems above.</div>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <label>Duration (seconds)
+          <input type="number" id="duration" value="120" min="5" />
+        </label>
+        <label class="checkbox-inline">
+          <input type="checkbox" id="sudden-death" checked />
+          End run on first wrong answer
+        </label>
+        <label class="checkbox-inline">
+          <input type="checkbox" id="audio-mode" />
+          Listen mode (problem read aloud, not shown)
+        </label>
+        <label class="checkbox-inline">
+          <input type="checkbox" id="autosubmit" />
+          Auto-submit correct answers (no Enter, like Zetamac)
+        </label>
+        <label class="checkbox-inline">
+          <input type="checkbox" id="auto-clear" checked />
+          Auto-clear after 4 digits
+        </label>
+        <label class="checkbox-inline">
+          <input type="checkbox" id="keypad-toggle" />
+          Big-button keypad
+        </label>
+      </div>
+
+      <button id="start-btn" class="primary big">Start</button>
+      <p class="hint">Type your answer and press <kbd>Enter</kbd> to submit.</p>
+    </div>
+  </section>
+
+  <!-- ============ PLAY: GAME ============ -->
+  <section id="view-game" class="view">
+    <div class="game-hud">
+      <div class="hud-item"><span class="hud-label">Time</span><span id="time-left" class="hud-value">120</span></div>
+      <div class="hud-item"><span class="hud-label">Score</span><span id="score" class="hud-value">0</span></div>
+      <button id="quit-btn" class="ghost">Quit</button>
+    </div>
+    <div class="problem" id="problem">3 + 4</div>
+    <div id="audio-panel" class="audio-panel" hidden>
+      <div class="speaker" id="speaker-indicator">🔊</div>
+      <div class="audio-status" id="audio-status">Listen, then type your answer</div>
+      <button id="repeat-btn" class="ghost">🔊 Repeat (R)</button>
+    </div>
+    <input type="text" id="answer" class="answer-input" inputmode="numeric"
+           autocomplete="off" autocorrect="off" spellcheck="false" />
+    <div id="keypad" class="keypad" hidden>
+      <button class="key" data-k="1">1</button>
+      <button class="key" data-k="2">2</button>
+      <button class="key" data-k="3">3</button>
+      <button class="key" data-k="4">4</button>
+      <button class="key" data-k="5">5</button>
+      <button class="key" data-k="6">6</button>
+      <button class="key" data-k="7">7</button>
+      <button class="key" data-k="8">8</button>
+      <button class="key" data-k="9">9</button>
+      <button class="key alt" data-k="back">⌫</button>
+      <button class="key" data-k="0">0</button>
+      <button class="key alt" data-k="action" id="key-action">↵</button>
+    </div>
+    <div id="feedback" class="feedback"></div>
+  </section>
+
+  <!-- ============ PLAY: RESULTS ============ -->
+  <section id="view-results" class="view">
+    <div class="card center">
+      <h2 id="result-headline">Run over</h2>
+      <div class="big-score" id="final-score">0</div>
+      <div class="result-sub" id="result-sub"></div>
+      <div class="result-miss" id="result-miss"></div>
+      <div class="result-stats" id="result-stats"></div>
+      <div class="result-actions">
+        <button id="again-btn" class="primary">Play again</button>
+        <button id="settings-btn" class="ghost">Settings</button>
+      </div>
+      <p class="hint">Press <kbd>Enter</kbd> to play again.</p>
+    </div>
+  </section>
+
+  <!-- ============ STATS ============ -->
+  <section id="view-stats" class="view">
+    <div class="mode-filter" id="mode-filter">
+      <button class="seg active" data-mode="all">All</button>
+      <button class="seg" data-mode="typed">Default</button>
+      <button class="seg" data-mode="listen">Listen</button>
+    </div>
+    <div class="stat-cards">
+      <div class="stat-card"><span class="stat-num" id="s-today-high">–</span><span class="stat-cap">Today's high</span></div>
+      <div class="stat-card"><span class="stat-num" id="s-today-median">–</span><span class="stat-cap">Today's median</span></div>
+      <div class="stat-card"><span class="stat-num" id="s-alltime-high">–</span><span class="stat-cap">All-time high</span></div>
+      <div class="stat-card"><span class="stat-num" id="s-today-games">–</span><span class="stat-cap">Games today</span></div>
+      <div class="stat-card"><span class="stat-num" id="s-avg7">–</span><span class="stat-cap">7-day avg score</span></div>
+    </div>
+
+    <div class="card">
+      <h2>Daily high score</h2>
+      <div id="chart-daily" class="chart"></div>
+    </div>
+
+    <div class="card">
+      <h2>Recent runs</h2>
+      <div id="recent-runs" class="runs-table"></div>
+    </div>
+
+    <div class="card">
+      <h2>Accuracy by operation</h2>
+      <div id="op-breakdown" class="op-breakdown"></div>
+    </div>
+
+    <div class="danger-row">
+      <button id="export-btn" class="ghost">Export data (JSON)</button>
+      <button id="reset-btn" class="ghost danger">Reset all stats</button>
+    </div>
+  </section>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
