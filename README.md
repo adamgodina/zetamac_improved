@@ -47,10 +47,11 @@ Both work for every feature. The only difference is where your stats are stored
   answer exactly as in normal play. Press `R` (or the **Repeat** button) to hear
   it again. Uses your browser's built-in text-to-speech — no microphone involved,
   and it works over `file://` too.
-- **Themes** — four palettes, monkeytype-inspired: **Ocean** (default teal),
-  **Serika** (yellow on graphite), **Matrix** (green on pure black), and
-  **8008** (pink on navy). Pick one in settings; it sticks per device.
-- **Big-button keypad** — an on-screen 0–9 pad with big tap targets, on by
+- **Themes** — five palettes, monkeytype-inspired: **Serika** (default — yellow
+  on graphite), **Ocean** (teal on dark blue), **Matrix** (green on pure black),
+  **Stealth** (monochrome black/gray/white), and **Sakura** (pink on navy).
+  Pick one in settings; it sticks per device.
+- **Keypad for mobile** — an on-screen 0–9 pad with big tap targets, on by
   default on phones/tablets and off on desktop. On phones it sits flush with the
   bottom of the screen, like a real keyboard. With auto-submit the bottom-right
   key is **C** (clear a mistyped answer); otherwise it's **↵** (submit).

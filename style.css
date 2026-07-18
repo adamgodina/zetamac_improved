@@ -1,23 +1,5 @@
+/* default theme: Serika (monkeytype's signature yellow on graphite) */
 :root {
-  --bg: #0f1419;
-  --bg-glow: #16202b;
-  --panel: #1a212b;
-  --panel-2: #222c38;
-  --border: #2c3744;
-  --text: #e6edf3;
-  --muted: #8b97a6;
-  --accent: #4fd1c5;
-  --accent-dim: #2c8a82;
-  --on-accent: #06231f;
-  --good: #4ade80;
-  --bad: #f87171;
-  --shadow: 0 8px 30px rgba(0,0,0,.35);
-  --radius: 14px;
-  font-size: 16px;
-}
-
-/* ---------- themes (monkeytype-inspired) ---------- */
-:root[data-theme="serika"] {
   --bg: #323437;
   --bg-glow: #3a3d40;
   --panel: #2c2e31;
@@ -30,6 +12,39 @@
   --on-accent: #323437;
   --good: #4ade80;
   --bad: #ca4754;
+  --shadow: 0 8px 30px rgba(0,0,0,.35);
+  --radius: 14px;
+  font-size: 16px;
+}
+
+/* ---------- themes (monkeytype-inspired) ---------- */
+:root[data-theme="ocean"] {
+  --bg: #0f1419;
+  --bg-glow: #16202b;
+  --panel: #1a212b;
+  --panel-2: #222c38;
+  --border: #2c3744;
+  --text: #e6edf3;
+  --muted: #8b97a6;
+  --accent: #4fd1c5;
+  --accent-dim: #2c8a82;
+  --on-accent: #06231f;
+  --good: #4ade80;
+  --bad: #f87171;
+}
+:root[data-theme="stealth"] {
+  --bg: #000000;
+  --bg-glow: #0a0a0a;
+  --panel: #0e0e0e;
+  --panel-2: #191919;
+  --border: #2b2b2b;
+  --text: #ececec;
+  --muted: #6e6e6e;
+  --accent: #e8e8e8;
+  --accent-dim: #5b5b5b;
+  --on-accent: #0a0a0a;
+  --good: #bdbdbd;
+  --bad: #d95757;
 }
 :root[data-theme="matrix"] {
   --bg: #000000;
@@ -45,7 +60,7 @@
   --good: #15ff00;
   --bad: #da3333;
 }
-:root[data-theme="8008"] {
+:root[data-theme="sakura"] {
   --bg: #333a45;
   --bg-glow: #3b4350;
   --panel: #2c323c;

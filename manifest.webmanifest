@@ -4,8 +4,8 @@
   "description": "Mental math trainer for quant interview prep",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#0f1419",
-  "theme_color": "#0f1419",
+  "background_color": "#323437",
+  "theme_color": "#323437",
   "icons": [
     { "src": "icon.png", "sizes": "180x180", "type": "image/png" }
   ]

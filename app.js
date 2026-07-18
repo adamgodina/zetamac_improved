@@ -713,8 +713,11 @@ function init() {
   updateModeHint();
   $("mode-toggle").addEventListener("change", updateModeHint);
 
-  // themes
-  applyTheme(localStorage.getItem(THEME_KEY) || "");
+  // themes (migrate keys from before the serika-default rename)
+  let savedTheme = localStorage.getItem(THEME_KEY) || "";
+  if (savedTheme === "8008") savedTheme = "sakura";
+  if (savedTheme === "serika") savedTheme = "";   // serika is now the default
+  applyTheme(savedTheme);
   document.querySelectorAll(".theme-chip").forEach((chip) =>
     chip.addEventListener("click", () => applyTheme(chip.dataset.theme || ""))
   );
