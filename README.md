@@ -49,14 +49,10 @@ Both work for every feature. The only difference is where your stats are stored
   behavior: the moment the field equals the right answer it's accepted, no Enter
   needed. With it on, sudden death only triggers if you explicitly press Enter
   on a wrong value — mistyping and fixing it costs you time, not the run.
-- **Auto-clear after 4 digits** (on by default, only active with auto-submit) —
-  once you've typed 4 digits and they're not the answer, the field flashes and
-  clears itself so you can retype immediately. (If a problem's answer is longer
-  than 4 digits, the limit stretches to match — it never clears an answer you're
-  still validly typing.)
 - **Big-button keypad** — an on-screen 0–9 pad with big tap targets, on by
-  default on phones/tablets and off on desktop. With auto-submit the bottom-right
-  key is **C** (clear); otherwise it's **↵** (submit).
+  default on phones/tablets and off on desktop. On phones it sits flush with the
+  bottom of the screen, like a real keyboard. With auto-submit the bottom-right
+  key is **C** (clear a mistyped answer); otherwise it's **↵** (submit).
 - **Stats tab** — today's high, all-time high, games today, 7-day average,
   a 14-day daily-high chart, your recent runs, and per-operation accuracy.
   Use the **All / Typed / Listen** toggle at the top to view each mode's

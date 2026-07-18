@@ -68,7 +68,6 @@ function readConfigFromForm() {
     suddenDeath: $("sudden-death").checked,
     audioMode: $("audio-mode").checked,
     autoSubmit: $("autosubmit").checked,
-    autoClear: $("auto-clear").checked,
     keypad: $("keypad-toggle").checked,
   };
 }
@@ -86,7 +85,6 @@ function applyConfigToForm(c) {
   $("sudden-death").checked = c.suddenDeath;
   $("audio-mode").checked = !!c.audioMode;
   $("autosubmit").checked = !!c.autoSubmit;
-  $("auto-clear").checked = c.autoClear !== false;   // default on for older configs
   $("keypad-toggle").checked = c.keypad === undefined ? isTouchDevice() : !!c.keypad;
 }
 
@@ -255,14 +253,11 @@ function recordOp(op, correct) {
 
 /* Zetamac-style auto-submit: runs on every keystroke / keypad tap.
    A value equal to the answer is accepted immediately — no Enter needed.
-   Auto-clear wipes the field once it can no longer become correct
-   (>= 4 digits, or more if the answer itself is longer). Neither path
-   counts as a "wrong answer", so sudden death only fires on an explicit
-   Enter submit — same as real Zetamac, where you just keep typing. */
+   A mistyped value is never counted as "wrong": clear it with C/backspace
+   and keep going. Sudden death only fires on an explicit Enter submit. */
 function handleAutoInput() {
   if (!game.active || !game.cfg.autoSubmit) return;
-  const inp = $("answer");
-  const raw = inp.value.trim();
+  const raw = $("answer").value.trim();
   if (raw === "") return;
   const val = Number(raw);
 
@@ -272,18 +267,6 @@ function handleAutoInput() {
     game.score++;
     $("score").textContent = game.score;
     nextProblem();
-    return;
-  }
-
-  if (game.cfg.autoClear) {
-    const digits = raw.replace(/\D/g, "").length;
-    const needed = Math.max(4, String(Math.abs(game.current.answer)).length);
-    if (digits >= needed) {
-      inp.classList.remove("flash-bad");
-      void inp.offsetWidth; // restart animation
-      inp.classList.add("flash-bad");
-      inp.value = "";
-    }
   }
 }
 

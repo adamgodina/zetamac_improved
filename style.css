@@ -16,6 +16,14 @@
 
 * { box-sizing: border-box; }
 
+html { background: var(--bg); }
+
+body {
+  /* home-screen app feel: no rubber-band bounce, no double-tap zoom delay */
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
+}
+
 body {
   margin: 0;
   background: radial-gradient(1200px 600px at 50% -10%, #16202b 0%, var(--bg) 60%);
@@ -251,7 +259,29 @@ kbd {
 
 /* ---------- small screens ---------- */
 @media (max-width: 560px) {
-  #app { padding: 14px 12px 40px; }
+  #app {
+    /* the shorthand must keep the safe-area offsets, or the header slides
+       up behind the iPhone status bar / Dynamic Island */
+    padding: calc(14px + env(safe-area-inset-top, 0px))
+             12px
+             calc(40px + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  /* during a game, shrink the bottom padding so the keypad can hug the
+     bottom edge (with just the home-bar inset below it) */
+  #app:has(#view-game.active) {
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  #view-game.active { display: flex; flex-direction: column; flex: 1; align-items: center; }
+  /* stretch children full-width: the answer box becomes a calculator-style
+     display and the keypad fills the bottom of the screen */
+  #view-game.active > * { width: 100%; }
+  .keypad { margin-top: auto; width: 100%; max-width: 420px; }
+  #view-game .feedback { display: none; }   /* don't push the keypad up */
   .topbar { margin-bottom: 16px; }
   .game-hud { gap: 24px; margin-bottom: 18px; }
   #view-game { padding-top: 8px; }
