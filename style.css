@@ -437,6 +437,7 @@ kbd {
 .result-miss { margin-bottom: 18px; font-size: .95rem; color: var(--muted); }
 .result-miss:empty { display: none; }
 .result-miss b { color: var(--bad); font-size: 1.05rem; }
+.result-miss b.final { color: var(--accent); }   /* timed out, not missed */
 .result-stats {
   display: flex;
   justify-content: center;

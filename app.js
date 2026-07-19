@@ -352,6 +352,10 @@ function endGame(reason) {
     attempts: game.attempts,
     reason,                         // "wrong" | "time" | "quit"
     miss: game.lastMiss || null,    // last missed question this run, if any
+    // the problem left on screen when time ran out (or the player quit)
+    final: (reason !== "wrong" && game.current)
+      ? { text: game.current.text, answer: game.current.answer }
+      : null,
     mode: game.cfg.audioMode ? "listen" : "typed",
     elapsed: Math.round(elapsed),
     duration: game.cfg.duration,
@@ -485,12 +489,19 @@ function showResults(run, runs) {
   }
   $("result-sub").textContent = sub;
 
-  // show the answer to the last question they missed this run
+  // show the answer to the question that ended the run: the missed one on
+  // a wrong submit, otherwise the unanswered problem the timer cut off
   const miss = run.miss;
-  $("result-miss").innerHTML = miss
-    ? `Last miss: <b>${miss.text} = ${miss.answer}</b>` +
-      (miss.given ? ` &nbsp;<span>(you answered ${escapeHtml(miss.given)})</span>` : "")
-    : "";
+  if (run.reason === "wrong" && miss) {
+    $("result-miss").innerHTML =
+      `Last miss: <b>${miss.text} = ${miss.answer}</b>` +
+      (miss.given ? ` &nbsp;<span>(you answered ${escapeHtml(miss.given)})</span>` : "");
+  } else if (run.final) {
+    $("result-miss").innerHTML =
+      `Last problem: <b class="final">${run.final.text} = ${run.final.answer}</b>`;
+  } else {
+    $("result-miss").innerHTML = "";
+  }
 
   const acc = run.attempts ? Math.round((run.score / run.attempts) * 100) : 0;
   const rate = run.elapsed ? (run.score / (run.elapsed / 60)).toFixed(1) : "0";
