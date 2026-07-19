@@ -210,7 +210,10 @@ function startGame() {
     cfg.audioMode = false;
     $("audio-mode").checked = false;
   }
-  if (cfg.audioMode) warmUpTTS();   // inside the Start tap = iOS audio unlock
+  if (cfg.audioMode) {              // inside the Start tap = iOS audio unlock
+    warmUpTTS();
+    keepAudioAlive();
+  }
   saveConfig(cfg);
 
   game.cfg = cfg;
@@ -387,6 +390,7 @@ function speechSupported() {
       speak. A leading comma adds one more safety beat of silence. */
 let ttsWarm = false;
 let speakTimer = null;
+let audioCtx = null;
 
 function warmUpTTS() {
   if (ttsWarm || !speechSupported()) return;
@@ -394,6 +398,24 @@ function warmUpTTS() {
   const u = new SpeechSynthesisUtterance("a");
   u.volume = 0;
   window.speechSynthesis.speak(u);
+}
+
+/* iOS closes the audio session whenever it goes idle between utterances,
+   then clips the first ~200ms of the next one while it reopens. A looping
+   silent Web Audio source holds the session open for the whole run.
+   Must be first called from inside a user gesture (the Start tap). */
+function keepAudioAlive() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  if (!audioCtx) {
+    audioCtx = new AC();
+    const src = audioCtx.createBufferSource();
+    src.buffer = audioCtx.createBuffer(1, 1, 22050); // one silent sample
+    src.loop = true;
+    src.connect(audioCtx.destination);
+    src.start(0);
+  }
+  if (audioCtx.state === "suspended") audioCtx.resume();
 }
 
 function speakProblem(text) {
@@ -413,13 +435,12 @@ function speakProblem(text) {
   u.onend = done;
   u.onerror = done;
 
+  // always start after a short delay so the engine is ready before the
+  // first word — speaking immediately is what clips the opening syllable
   const synth = window.speechSynthesis;
-  if (synth.speaking || synth.pending) {
-    synth.cancel();
-    speakTimer = setTimeout(() => synth.speak(u), 180);
-  } else {
-    synth.speak(u);
-  }
+  const busy = synth.speaking || synth.pending;
+  if (busy) synth.cancel();
+  speakTimer = setTimeout(() => synth.speak(u), busy ? 300 : 220);
 }
 
 function repeatProblem() {
@@ -431,6 +452,7 @@ function setAudioStatus(t) { const e = $("audio-status"); if (e) e.textContent =
 function stopAudio() {
   clearTimeout(speakTimer);
   if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  if (audioCtx && audioCtx.state === "running") audioCtx.suspend();
   const speaker = $("speaker-indicator");
   if (speaker) speaker.classList.remove("speaking");
 }

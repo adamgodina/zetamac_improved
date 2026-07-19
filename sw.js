@@ -2,7 +2,7 @@
    once installed. Serves from cache instantly, refreshes the cache in the
    background so edits show up on the next launch. */
 
-const CACHE = "zetamacpp-v5";
+const CACHE = "zetamacpp-v6";
 const ASSETS = [
   "./",
   "./index.html",
@@ -13,8 +13,12 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (e) => {
+  // cache each asset independently — a single missing file (e.g. a deleted
+  // icon) must not abort the whole install the way cache.addAll would
   e.waitUntil(
-    caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then((c) => Promise.all(ASSETS.map((a) => c.add(a).catch(() => null))))
+      .then(() => self.skipWaiting())
   );
 });
 
