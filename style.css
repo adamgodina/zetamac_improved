@@ -150,6 +150,15 @@ body {
 }
 .card.center { text-align: center; }
 .card h2 { margin: 0 0 16px; font-size: 1.05rem; }
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.card-head h2 { margin: 0; }
+button.ghost.small { padding: 6px 12px; font-size: .8rem; }
 
 /* ---------- setup ---------- */
 .op-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }

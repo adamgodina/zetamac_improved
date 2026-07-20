@@ -103,6 +103,34 @@ function isTouchDevice() {
   return window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
 }
 
+/* Stats only count runs played on the default problem set, so custom
+   ranges/durations can't inflate (or deflate) the trend lines.
+   Play-style options — auto-submit, listen mode, keypad — don't matter. */
+function isDefaultConfig(cfg) {
+  return cfg.add.on && cfg.sub.on && cfg.mul.on && cfg.div.on &&
+    cfg.add.aMin === 2 && cfg.add.aMax === 100 &&
+    cfg.add.bMin === 2 && cfg.add.bMax === 100 &&
+    cfg.mul.aMin === 2 && cfg.mul.aMax === 12 &&
+    cfg.mul.bMin === 2 && cfg.mul.bMax === 100 &&
+    cfg.duration === 120;
+}
+
+/* reset every gameplay setting to factory defaults (theme is left alone) */
+function resetSettings() {
+  $("op-add").checked = $("op-sub").checked = true;
+  $("op-mul").checked = $("op-div").checked = true;
+  $("add-a-min").value = 2; $("add-a-max").value = 100;
+  $("add-b-min").value = 2; $("add-b-max").value = 100;
+  $("mul-a-min").value = 2; $("mul-a-max").value = 12;
+  $("mul-b-min").value = 2; $("mul-b-max").value = 100;
+  $("duration").value = 120;
+  $("mode-toggle").checked = true;            // auto-submit
+  $("audio-mode").checked = false;
+  $("keypad-toggle").checked = isTouchDevice();
+  updateModeHint();
+  saveConfig(readConfigFromForm());
+}
+
 /* ============================================================
    THEMES  —  palettes defined in style.css via [data-theme]
    ============================================================ */
@@ -366,11 +394,15 @@ function endGame(reason) {
       autoSubmit: !!game.cfg.autoSubmit,
     },
   };
+  // only default-settings runs count toward stats
+  const counted = isDefaultConfig(game.cfg);
   const runs = loadRuns();
-  runs.push(run);
-  saveRuns(runs);
+  if (counted) {
+    runs.push(run);
+    saveRuns(runs);
+  }
 
-  showResults(run, runs);
+  showResults(run, runs, counted);
 }
 
 function quitGame() {
@@ -464,7 +496,7 @@ function stopAudio() {
 /* ============================================================
    RESULTS SCREEN
    ============================================================ */
-function showResults(run, runs) {
+function showResults(run, runs, counted) {
   const headline = {
     wrong: "Wrong answer — run over",
     time:  "Time's up!",
@@ -473,19 +505,24 @@ function showResults(run, runs) {
   $("result-headline").textContent = headline;
   $("final-score").textContent = run.score;
 
-  // is this a personal / daily best? — compared only within the same mode
-  const sameMode = runs.filter(r => runMode(r) === runMode(run));
-  const todays = sameMode.filter(r => r.day === run.day);
-  const todayHigh = Math.max(...todays.map(r => r.score));
-  const allHigh = Math.max(...sameMode.map(r => r.score));
-  const modeLabel = runMode(run) === "listen" ? "Listen" : "Default";
   let sub = "";
-  if (run.score === allHigh && sameMode.filter(r => r.score === allHigh).length === 1) {
-    sub = `🏆 New all-time high — ${modeLabel}!`;
-  } else if (run.score === todayHigh && todays.filter(r => r.score === todayHigh).length === 1) {
-    sub = `⭐ New daily best — ${modeLabel}!`;
+  if (!counted) {
+    // custom problem set: no high-score comparison, nothing recorded
+    sub = "Custom settings — this run isn't saved to stats.";
   } else {
-    sub = `${modeLabel} · Today's best: ${todayHigh} · All-time: ${allHigh}`;
+    // is this a personal / daily best? — compared only within the same mode
+    const sameMode = runs.filter(r => runMode(r) === runMode(run));
+    const todays = sameMode.filter(r => r.day === run.day);
+    const todayHigh = Math.max(...todays.map(r => r.score));
+    const allHigh = Math.max(...sameMode.map(r => r.score));
+    const modeLabel = runMode(run) === "listen" ? "Listen" : "Default";
+    if (run.score === allHigh && sameMode.filter(r => r.score === allHigh).length === 1) {
+      sub = `🏆 New all-time high — ${modeLabel}!`;
+    } else if (run.score === todayHigh && todays.filter(r => r.score === todayHigh).length === 1) {
+      sub = `⭐ New daily best — ${modeLabel}!`;
+    } else {
+      sub = `${modeLabel} · Today's best: ${todayHigh} · All-time: ${allHigh}`;
+    }
   }
   $("result-sub").textContent = sub;
 
@@ -761,6 +798,7 @@ function init() {
   $("settings-btn").addEventListener("click", () => showView("setup"));
   $("export-btn").addEventListener("click", exportData);
   $("reset-btn").addEventListener("click", resetData);
+  $("reset-settings").addEventListener("click", resetSettings);
   $("repeat-btn").addEventListener("click", repeatProblem);
 
   // auto-submit / auto-clear checks on every keystroke

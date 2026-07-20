@@ -57,6 +57,10 @@ Both work for every feature. The only difference is where your stats are stored
   key is **C** (clear a mistyped answer); otherwise it's **↵** (submit).
 - **Stats tab** — today's high, all-time high, games today, 7-day average,
   a 14-day daily-high chart, your recent runs, and per-operation accuracy.
+  Only runs played on the **default problem set** (all four operations, standard
+  ranges, 120s) are recorded, so custom-range experiments can't skew your
+  trends — the results screen tells you when a run wasn't saved. A **Reset to
+  defaults** button in settings puts everything back to the standard setup.
   Use the **All / Typed / Listen** toggle at the top to view each mode's
   progress separately — typed and listen runs are tracked as independent
   histories (and "new high score" banners only compare within the same mode).
