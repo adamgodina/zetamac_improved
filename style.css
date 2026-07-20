@@ -303,7 +303,7 @@ button.primary {
   cursor: pointer;
   transition: .15s;
 }
-button.primary:hover { background: #5fe0d4; }
+button.primary:hover { filter: brightness(1.12); }
 button.big { width: 100%; padding: 16px; font-size: 1.1rem; }
 button.ghost {
   background: transparent;
