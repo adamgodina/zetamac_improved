@@ -541,11 +541,12 @@ function showResults(run, runs, counted) {
   }
 
   const acc = run.attempts ? Math.round((run.score / run.attempts) * 100) : 0;
-  const rate = run.elapsed ? (run.score / (run.elapsed / 60)).toFixed(1) : "0";
+  // average time to land each correct answer
+  const secPer = run.score ? `${(run.elapsed / run.score).toFixed(1)}s` : "–";
   $("result-stats").innerHTML = `
     <div><b>${run.attempts}</b>attempts</div>
     <div><b>${acc}%</b>accuracy</div>
-    <div><b>${rate}</b>per minute</div>
+    <div><b>${secPer}</b>sec/question</div>
     <div><b>${run.elapsed}s</b>elapsed</div>
   `;
 
