@@ -61,9 +61,11 @@ Both work for every feature. The only difference is where your stats are stored
   ranges, 120s) are recorded, so custom-range experiments can't skew your
   trends — the results screen tells you when a run wasn't saved. A **Reset to
   defaults** button in settings puts everything back to the standard setup.
-  Use the **All / Typed / Listen** toggle at the top to view each mode's
-  progress separately — typed and listen runs are tracked as independent
-  histories (and "new high score" banners only compare within the same mode).
+  Use the **All / Auto-submit / Sudden death / Listen** toggle at the top to
+  view each style's progress separately — they're tracked as independent
+  histories (and "new high score" banners only compare within the same one),
+  since a timed auto-submit sprint and a no-mistakes streak aren't comparable
+  scores. Listen runs group together regardless of submission style.
 
 ## Use it on your iPhone
 

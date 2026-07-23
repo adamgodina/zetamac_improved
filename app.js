@@ -34,6 +34,14 @@ function saveConfig(cfg) {
 /* a run's mode; runs saved before this feature default to "typed" */
 function runMode(r) { return r.mode || "typed"; }
 
+/* stats bucket for a run: listen runs group together; visual runs split by
+   submission style. Old runs w/o a stored autoSubmit flag were Enter-mode. */
+function runCategory(r) {
+  if (runMode(r) === "listen") return "listen";
+  return (r.config && r.config.autoSubmit) ? "auto" : "sudden";
+}
+const CAT_LABELS = { auto: "Auto-submit", sudden: "Sudden death", listen: "Listen" };
+
 /* median of a numeric array (0 for empty) */
 function median(arr) {
   const a = arr.slice().sort((x, y) => x - y);
@@ -409,6 +417,14 @@ function quitGame() {
   if (game.active) endGame("quit");
 }
 
+/* abandon the current run WITHOUT recording it, then start a fresh one */
+function restartGame() {
+  game.active = false;
+  clearInterval(game.timerId);
+  stopAudio();
+  startGame();
+}
+
 /* ============================================================
    LISTEN MODE  —  read the problem aloud (text-to-speech).
    The problem is never shown; the answer is still typed.
@@ -510,12 +526,12 @@ function showResults(run, runs, counted) {
     // custom problem set: no high-score comparison, nothing recorded
     sub = "Custom settings — this run isn't saved to stats.";
   } else {
-    // is this a personal / daily best? — compared only within the same mode
-    const sameMode = runs.filter(r => runMode(r) === runMode(run));
+    // is this a personal / daily best? — compared only within the same category
+    const sameMode = runs.filter(r => runCategory(r) === runCategory(run));
     const todays = sameMode.filter(r => r.day === run.day);
     const todayHigh = Math.max(...todays.map(r => r.score));
     const allHigh = Math.max(...sameMode.map(r => r.score));
-    const modeLabel = runMode(run) === "listen" ? "Listen" : "Default";
+    const modeLabel = CAT_LABELS[runCategory(run)];
     if (run.score === allHigh && sameMode.filter(r => r.score === allHigh).length === 1) {
       sub = `🏆 New all-time high — ${modeLabel}!`;
     } else if (run.score === todayHigh && todays.filter(r => r.score === todayHigh).length === 1) {
@@ -540,12 +556,17 @@ function showResults(run, runs, counted) {
     $("result-miss").innerHTML = "";
   }
 
-  const acc = run.attempts ? Math.round((run.score / run.attempts) * 100) : 0;
   // average time to land each correct answer
   const secPer = run.score ? `${(run.elapsed / run.score).toFixed(1)}s` : "–";
+  // accuracy is meaningless in auto-submit (wrong tries aren't counted), so hide it
+  let accCell = "";
+  if (!(run.config && run.config.autoSubmit)) {
+    const acc = run.attempts ? Math.round((run.score / run.attempts) * 100) : 0;
+    accCell = `<div><b>${acc}%</b>accuracy</div>`;
+  }
   $("result-stats").innerHTML = `
     <div><b>${run.attempts}</b>attempts</div>
-    <div><b>${acc}%</b>accuracy</div>
+    ${accCell}
     <div><b>${secPer}</b>sec/question</div>
     <div><b>${run.elapsed}s</b>elapsed</div>
   `;
@@ -561,11 +582,11 @@ function showResults(run, runs, counted) {
    ============================================================ */
 const OP_LABELS = { add: "Addition", sub: "Subtraction", mul: "Multiplication", div: "Division" };
 
-let statsMode = "all"; // "all" | "typed" | "listen"
+let statsMode = "all"; // "all" | "auto" | "sudden" | "listen"
 
 function renderStats() {
   const all = loadRuns().slice().sort((a, b) => a.ts - b.ts);
-  const runs = (statsMode === "all") ? all : all.filter(r => runMode(r) === statsMode);
+  const runs = (statsMode === "all") ? all : all.filter(r => runCategory(r) === statsMode);
   const today = dayKey(Date.now());
 
   // ---- summary cards ----
@@ -686,11 +707,14 @@ function renderRecent(runs) {
   host.innerHTML = last.map(r => {
     const dt = new Date(r.ts);
     const when = `${r.day.slice(5)} ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
-    const acc = r.attempts ? Math.round((r.score / r.attempts) * 100) : 0;
+    // accuracy is meaningless in auto-submit; show sec/question there instead
+    const mid = (r.config && r.config.autoSubmit)
+      ? (r.score ? `${(r.elapsed / r.score).toFixed(1)}s/q` : "–")
+      : `${r.attempts ? Math.round((r.score / r.attempts) * 100) : 0}% acc`;
     return `<div class="run-row">
       <span class="muted">${when}</span>
       <span class="muted">${reasonLabel[r.reason] || r.reason}</span>
-      <span class="muted">${acc}% acc</span>
+      <span class="muted">${mid}</span>
       <span class="run-score">${r.score}</span>
     </div>`;
   }).join("");
@@ -849,6 +873,11 @@ function init() {
       startGame();
       return;
     }
+    // T -> restart: fresh run mid-game, or a new run from the results screen
+    if (e.key === "t" || e.key === "T") {
+      if (game.active) { e.preventDefault(); restartGame(); return; }
+      if ($("view-results").classList.contains("active")) { e.preventDefault(); startGame(); return; }
+    }
     // listen mode: R re-reads the problem (and shouldn't be typed into the box)
     if (game.active && game.cfg && game.cfg.audioMode && (e.key === "r" || e.key === "R")) {
       e.preventDefault();
@@ -861,7 +890,7 @@ function init() {
     tab.addEventListener("click", () => switchTab(tab.dataset.view));
   });
 
-  // stats mode filter (All / Typed / Listen)
+  // stats mode filter (All / Auto-submit / Sudden death / Listen)
   document.querySelectorAll("#mode-filter .seg").forEach(seg => {
     seg.addEventListener("click", () => {
       statsMode = seg.dataset.mode;
